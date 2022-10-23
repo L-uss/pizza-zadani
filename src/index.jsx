@@ -1,13 +1,15 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { createRoot } from 'react-dom/client';
 import ToppingsSelect from './components/ToppingsSelect';
+import { PrefsContext } from './components/contex';
+import Header from './components/Header/index.jsx';
 import './style.css';
 
 const toppings = [
   {
     name: 'Pepperoni',
     price: 1,
-    vegan: false,
+    vegan: true,
     selected: false,
   },
   {
@@ -79,19 +81,32 @@ const toppings = [
 ];
 
 const App = () => {
+  const [veganOnly, setVeganOnly ] = useState(true); 
+  const [selectedToppings, setSelectedToppings] = useState(toppings);
+
+  useEffect(()=>{
+    const newToppings = [...toppings];
+    
+    newToppings.forEach((topping) => {
+      if(veganOnly && topping.vegan==false && topping.selected)
+      {
+        topping.selected=false;
+      }
+    });
+
+    setSelectedToppings(newToppings);
+  },[veganOnly]);
+
   return (
-    <div className="container">
-      <header>
-        <div className="pizza" />
-        <h1>Build your own pizza</h1>
-      </header>
-      <main>
-        <ToppingsSelect toppings={toppings} />
-      </main>
+    <PrefsContext.Provider value={{ veganOnly, setVeganOnly }}>
+      <div className="container">
+        <Header veganOption={veganOnly} setVeganOption={setVeganOnly}/>
+        <main>
+          <ToppingsSelect toppings={selectedToppings} setToppings={setSelectedToppings}/>
+        </main>
     </div>
+    </PrefsContext.Provider>
   );
 };
 
-createRoot(
-  document.querySelector('#app'),
-).render(<App />);
+createRoot(document.querySelector('#app'),).render(<App />);
